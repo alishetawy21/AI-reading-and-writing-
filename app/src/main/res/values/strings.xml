@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">LingoFloat</string>
+    <string name="tagline_subtitle">Floating Reader, Translator &amp; Accent Coach</string>
+    <string name="sign_in_with_google">Sign in with Google</string>
+    <string name="nav_studio">Studio</string>
+    <string name="nav_phrasebook">Phrasebook</string>
+    <string name="nav_progress">Progress</string>
+    <string name="floating_channel_name">LingoFloat Assistant</string>
+    <string name="floating_channel_desc">Persistent control for the floating reading, translation, and pronunciation overlay</string>
+    <string name="floating_notification_title">LingoFloat Bubble Active</string>
+    <string name="floating_notification_body">Tap the floating bubble anywhere to read, translate, and practice pronunciation.</string>
+</resources>

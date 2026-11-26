@@ -1,0 +1,119 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidPhrase(data) {
+      return data.userId is string && data.userId == request.auth.uid && data.userId.size() <= 128 &&
+             data.sourceText is string && data.sourceText.size() >= 1 && data.sourceText.size() <= 2000 &&
+             data.translatedText is string && data.translatedText.size() >= 1 && data.translatedText.size() <= 2000 &&
+             data.sourceLanguage is string && data.sourceLanguage.size() >= 2 && data.sourceLanguage.size() <= 30 &&
+             data.targetLanguage is string && data.targetLanguage.size() >= 2 && data.targetLanguage.size() <= 30 &&
+             data.ipa is string && data.ipa.size() <= 1000 &&
+             data.accentTip is string && data.accentTip.size() <= 1000 &&
+             data.lastScore is int && data.lastScore >= 0 && data.lastScore <= 100 &&
+             data.practiceCount is int && data.practiceCount >= 0 && data.practiceCount <= 100000 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidPracticeSession(data) {
+      return data.userId is string && data.userId == request.auth.uid && data.userId.size() <= 128 &&
+             data.phraseText is string && data.phraseText.size() >= 1 && data.phraseText.size() <= 2000 &&
+             data.targetLanguage is string && data.targetLanguage.size() >= 2 && data.targetLanguage.size() <= 30 &&
+             data.recognizedTranscript is string && data.recognizedTranscript.size() <= 2000 &&
+             data.overallScore is int && data.overallScore >= 0 && data.overallScore <= 100 &&
+             data.accentScore is int && data.accentScore >= 0 && data.accentScore <= 100 &&
+             data.fluencyScore is int && data.fluencyScore >= 0 && data.fluencyScore <= 100 &&
+             data.intonationScore is int && data.intonationScore >= 0 && data.intonationScore <= 100 &&
+             data.coachSummary is string && data.coachSummary.size() <= 2000 &&
+             data.speechEngine is string && data.speechEngine.size() >= 1 && data.speechEngine.size() <= 60 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    match /users/{userId}/phrases/{phraseId} {
+      allow get: if isOwner(userId) && isValidId(phraseId);
+      allow list: if isOwner(userId);
+
+      allow create: if isOwner(userId) &&
+                       isValidId(phraseId) &&
+                       incoming().keys().hasAll([
+                         'userId', 'sourceText', 'translatedText', 'sourceLanguage',
+                         'targetLanguage', 'ipa', 'accentTip', 'lastScore',
+                         'practiceCount', 'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'userId', 'sourceText', 'translatedText', 'sourceLanguage',
+                         'targetLanguage', 'ipa', 'accentTip', 'lastScore',
+                         'practiceCount', 'createdAt', 'updatedAt'
+                       ]) &&
+                       isValidPhrase(incoming());
+
+      allow update: if isOwner(userId) &&
+                       isValidId(phraseId) &&
+                       isValidPhrase(incoming()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       (
+                         incoming().diff(existing()).affectedKeys().hasOnly(['lastScore', 'practiceCount', 'updatedAt']) ||
+                         incoming().diff(existing()).affectedKeys().hasOnly(['sourceText', 'translatedText', 'sourceLanguage', 'targetLanguage', 'ipa', 'accentTip', 'updatedAt'])
+                       );
+
+      allow delete: if isOwner(userId) && isValidId(phraseId);
+    }
+
+    match /users/{userId}/practiceSessions/{sessionId} {
+      allow get: if isOwner(userId) && isValidId(sessionId);
+      allow list: if isOwner(userId);
+
+      allow create: if isOwner(userId) &&
+                       isValidId(sessionId) &&
+                       incoming().keys().hasAll([
+                         'userId', 'phraseText', 'targetLanguage', 'recognizedTranscript',
+                         'overallScore', 'accentScore', 'fluencyScore', 'intonationScore',
+                         'coachSummary', 'speechEngine', 'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'userId', 'phraseText', 'targetLanguage', 'recognizedTranscript',
+                         'overallScore', 'accentScore', 'fluencyScore', 'intonationScore',
+                         'coachSummary', 'speechEngine', 'createdAt', 'updatedAt'
+                       ]) &&
+                       isValidPracticeSession(incoming());
+
+      allow update: if isOwner(userId) &&
+                       isValidId(sessionId) &&
+                       isValidPracticeSession(incoming()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['coachSummary', 'updatedAt']);
+
+      allow delete: if isOwner(userId) && isValidId(sessionId);
+    }
+  }
+}

@@ -1,0 +1,151 @@
+{
+  "entities": {
+    "SavedPhrase": {
+      "title": "SavedPhrase",
+      "description": "A user-saved reading passage or phrase with translation, IPA phonetics, accent tip, and pronunciation mastery score.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner Firebase Auth UID."
+        },
+        "sourceText": {
+          "type": "string",
+          "description": "Original phrase or reading passage text."
+        },
+        "translatedText": {
+          "type": "string",
+          "description": "Translated text in the user's target/native language."
+        },
+        "sourceLanguage": {
+          "type": "string",
+          "description": "BCP-47 or language code of the source phrase (e.g., en-US, es-ES)."
+        },
+        "targetLanguage": {
+          "type": "string",
+          "description": "BCP-47 or language code of the translation."
+        },
+        "ipa": {
+          "type": "string",
+          "description": "Phonetic IPA transcription and stress breakdown."
+        },
+        "accentTip": {
+          "type": "string",
+          "description": "Key accent and articulation note for the phrase."
+        },
+        "lastScore": {
+          "type": "integer",
+          "description": "Most recent pronunciation score from 0 to 100."
+        },
+        "practiceCount": {
+          "type": "integer",
+          "description": "Number of pronunciation practice attempts completed."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when saved (FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last update (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": [
+        "userId",
+        "sourceText",
+        "translatedText",
+        "sourceLanguage",
+        "targetLanguage",
+        "ipa",
+        "accentTip",
+        "lastScore",
+        "practiceCount",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "PracticeSession": {
+      "title": "PracticeSession",
+      "description": "A recorded pronunciation and accent analysis session for language learning progress tracking.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner Firebase Auth UID."
+        },
+        "phraseText": {
+          "type": "string",
+          "description": "Target phrase practiced by the user."
+        },
+        "targetLanguage": {
+          "type": "string",
+          "description": "Target accent/language code (e.g., en-US, en-GB, fr-FR)."
+        },
+        "recognizedTranscript": {
+          "type": "string",
+          "description": "Speech-to-Text recognized transcript of what the user spoke."
+        },
+        "overallScore": {
+          "type": "integer",
+          "description": "Overall pronunciation accuracy score (0-100)."
+        },
+        "accentScore": {
+          "type": "integer",
+          "description": "Accent clarity score (0-100)."
+        },
+        "fluencyScore": {
+          "type": "integer",
+          "description": "Speech fluency and pacing score (0-100)."
+        },
+        "intonationScore": {
+          "type": "integer",
+          "description": "Intonation and stress rhythm score (0-100)."
+        },
+        "coachSummary": {
+          "type": "string",
+          "description": "Actionable AI pronunciation and accent correction summary."
+        },
+        "speechEngine": {
+          "type": "string",
+          "description": "Speech engine used (e.g., Google Cloud STT + Gemini, Gemini Audio)."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when session was recorded (FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last update (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": [
+        "userId",
+        "phraseText",
+        "targetLanguage",
+        "recognizedTranscript",
+        "overallScore",
+        "accentScore",
+        "fluencyScore",
+        "intonationScore",
+        "coachSummary",
+        "speechEngine",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/phrases/{phraseId}": {
+      "schema": { "$ref": "#/entities/SavedPhrase" },
+      "description": "User-owned saved reading phrases, translations, and phonetic cards."
+    },
+    "/users/{userId}/practiceSessions/{sessionId}": {
+      "schema": { "$ref": "#/entities/PracticeSession" },
+      "description": "User-owned pronunciation and accent coaching history."
+    }
+  }
+}
